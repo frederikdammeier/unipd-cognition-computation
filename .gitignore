@@ -212,6 +212,7 @@ models/*
 !models/.gitkeep
 !models/example.pth
 data/*
+!data/fruits-vegetables-resized64.zip
 !data/.gitkeep
 
 task/
