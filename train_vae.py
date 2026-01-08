@@ -72,7 +72,7 @@ def train_vae(
     ])
 
     # normalize beta
-    beta_norm = beta / ((64 * 64) / latent_dim)
+    beta_norm = beta / ((64 * 64 * 3) / latent_dim)
     print(f"Normalized beta: {beta_norm}")
 
     # Create dataloader
