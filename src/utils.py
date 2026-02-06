@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 import torch
 
 def visualize_activation_maps(activation_tensor: torch.Tensor, 
@@ -84,3 +85,64 @@ def visualize_activation_maps(activation_tensor: torch.Tensor,
     plt.tight_layout()
     
     return fig
+
+def plot_confusion_matrix(predictions, targets, label_dict, normalize=True, figsize=(16, 14)):
+    """
+    Calculate and display confusion matrix for many classes.
+    
+    Args:
+        predictions: predicted class indices
+        targets: true class indices
+        label_dict: {idx: label_name} dictionary
+        normalize: if True, normalize by true labels (shows recall per class)
+        figsize: figure size (larger for many classes)
+    """
+    # Calculate confusion matrix
+    cm = confusion_matrix(targets, predictions)
+    
+    # Normalize if requested (shows recall per class)
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1, keepdims=True)
+        fmt = '.2f'
+    else:
+        fmt = 'd'
+    
+    # Create labels in order
+    class_labels = [label_dict[i] for i in range(len(label_dict))]
+    
+    # Plot with matplotlib imshow
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Create heatmap using imshow
+    im = ax.imshow(cm, cmap='Blues', aspect='auto')
+    
+    # Set ticks and labels
+    ax.set_xticks(np.arange(len(class_labels)))
+    ax.set_yticks(np.arange(len(class_labels)))
+    ax.set_xticklabels(class_labels, fontsize=8)
+    ax.set_yticklabels(class_labels, fontsize=8)
+    
+    # Rotate and align labels
+    plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+    
+    # Add colorbar
+    cbar = plt.colorbar(im, ax=ax)
+    cbar.set_label('Recall' if normalize else 'Count', fontsize=10)
+    
+    # Add text annotations with adaptive color
+    for i in range(len(class_labels)):
+        for j in range(len(class_labels)):
+            value = cm[i, j]
+            if normalize:
+                text = ax.text(j, i, f'{value:.2f}', ha='center', va='center', 
+                             color='white' if value > 0.5 else 'black', fontsize=6)
+            else:
+                text = ax.text(j, i, f'{int(value)}', ha='center', va='center',
+                             color='white' if value > cm.max()/2 else 'black', fontsize=6)
+    
+    ax.set_xlabel('Predicted', fontsize=10)
+    ax.set_ylabel('True', fontsize=10)
+    ax.set_title(f'Confusion Matrix ({len(label_dict)} classes)', fontsize=12)
+    
+    plt.tight_layout()
+    return fig, cm
